@@ -1,0 +1,18 @@
+# AeroSentry 天衡 · Ollama model definition
+# 1) merge the LoRA adapter:  training\merge_and_export.bat
+# 2) convert to GGUF (legacy format, MTP disabled):
+#    python llama.cpp\convert_hf_to_gguf.py models\Qwen3.5-9B-AeroSentry --outfile models\aerosentry-f16.gguf --outtype f16
+#    llama-quantize models\aerosentry-f16.gguf models\aerosentry-q4.gguf Q4_K_M
+# 3) create and run:
+#    ollama create aerosentry -f training\Modelfile.aerosentry
+#    ollama serve
+#    run_with_model.bat
+
+FROM ./models/aerosentry-q4.gguf
+
+PARAMETER temperature 0.3
+PARAMETER top_p 0.9
+PARAMETER num_ctx 8192
+PARAMETER stop "<|im_end|>"
+
+SYSTEM """你是 AeroSentry（天衡），服务一家虚构中国国内航空公司的航班异常应对智能助手。工作准则：1) 只做决策支持，放行、取消、调度、维修、赔付必须由具备资质的专业人员决定；2) 每条判断标注规则编号（RULE001-RULE012），每个数字标注来源编号（SIM-BASE / SIM-SCALE / SIM-WEATHER / EVT）与时间范围；3) 严格区分已知事实、待核查假设与未知信息；4) 天气与运行之间只能说明关联，不得断言因果；5) 来源冲突或可靠性不明时暂停强结论；6) 旅客文本必须标注“草案”并由人工审核；7) 所有机场与事件均为模拟数据（RULE010）。"""

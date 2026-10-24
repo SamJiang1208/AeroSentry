@@ -965,6 +965,31 @@ body{min-height:100vh;background:#05080E}
   .cv-foot{flex-direction:column;align-items:flex-start}
 }
 
+/* ---------- score legend + mode note ---------- */
+.risk-facts .legend{display:block;font-size:8.5px;color:#4B5A6E;letter-spacing:.04em;margin-top:2px}
+.mode-note{font-size:10.5px;line-height:1.6;color:#6B7F97;background:rgba(56,189,248,.05);
+  border:1px solid rgba(56,189,248,.14);border-radius:6px;padding:7px 10px;margin-bottom:10px}
+.mode-note b{color:#9BC7E4;font-weight:600}
+.event-item{position:relative}
+.event-item .del{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:4px;display:none;align-items:center;justify-content:center;
+  font-size:11px;color:#7E93A9;background:rgba(255,255,255,.06)}
+.event-item:hover .del{display:flex}
+.event-item .del:hover{color:#FCA5A5;background:rgba(244,63,94,.16)}
+.risk-facts>div{flex-wrap:wrap}
+.risk-facts .legend{flex:0 0 100%;text-align:right;margin-top:1px}
+
+/* ---------- weather keyword hint ---------- */
+.kw-hint{background:rgba(56,189,248,.045);border:1px solid rgba(56,189,248,.13);
+  border-radius:7px;padding:10px 12px;font-size:10.5px;line-height:1.85;color:#8FA3BA}
+.kw-hint b{display:block;color:#B9CBDD;font-size:11px;margin-bottom:5px;letter-spacing:.02em}
+.kw-hint i{display:inline-block;font-style:normal;font-size:9px;padding:1px 6px;border-radius:3px;
+  margin-right:8px;letter-spacing:.04em}
+.kw3{background:rgba(244,63,94,.14);color:#FCA5A5;border:1px solid rgba(244,63,94,.25)}
+.kw2{background:rgba(245,158,11,.13);color:#FCD34D;border:1px solid rgba(245,158,11,.25)}
+.kw1{background:rgba(56,189,248,.12);color:#9BC7E4;border:1px solid rgba(56,189,248,.22)}
+.kw-note{color:#5E738A;font-size:10px;margin-top:4px}
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23060b14'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2338bdf8' stroke-width='1.1' opacity='.55'/><circle cx='16' cy='16' r='4.5' fill='none' stroke='%2338bdf8' stroke-width='.8' opacity='.35'/><path d='M16 16 L16 7 A9 9 0 0 1 23.5 12.5 Z' fill='%2338bdf8' opacity='.55'/><circle cx='16' cy='16' r='1.7' fill='%237dd3fc'/></svg>">
 </head>
@@ -1193,7 +1218,8 @@ body{min-height:100vh;background:#05080E}
             </div>
           </div>
           <div class="risk-facts">
-            <div><span class="k">分值</span><span class="v mono" id="riskScore">—</span></div>
+            <div><span class="k">分值</span><span class="v mono" id="riskScore">—</span>
+              <span class="legend">低≤2 · 中3 · 高≥4</span></div>
             <div><span class="k">数据完备度</span><span class="v" id="riskComplete">—</span></div>
             <div><span class="k">输出状态</span><span class="v" id="riskStatus">—</span></div>
           </div>
@@ -1292,6 +1318,7 @@ body{min-height:100vh;background:#05080E}
             <h3>与 AeroSentry 对话</h3>
             <span class="tag" id="chatMode">引擎模式</span>
           </div>
+          <div class="mode-note" id="modeNote">分析与分级由确定性引擎完成，<b>不需要模型</b>；接入 Qwen3.5-9B 后对话可自由追问。</div>
           <div class="chat-log" id="chatLog" aria-live="polite"></div>
           <div class="chat-suggest" id="chatSuggest"></div>
           <form class="chat-form" id="chatForm">
@@ -1386,6 +1413,13 @@ body{min-height:100vh;background:#05080E}
       <label>事件名称<input id="cName" value="新发天气事件"></label>
       <label>事件时点<input id="cTime" value="第7天上午09:00"></label>
       <label>天气描述<input id="cWeather" value="未来三小时有雷雨并伴短时大风"></label>
+      <div class="wide kw-hint">
+        <b>引擎可识别的天气词</b>
+        <div><i class="kw3">极端 · 4 分</i>超强台风 / 台风 / 龙卷 / 冰雹 / 暴雪 / 沙尘暴</div>
+        <div><i class="kw2">较强 · 1 分</i>雷雨 / 雷暴 / 强对流</div>
+        <div><i class="kw1">一般 · 1 分</i>暴雨 / 降雨 / 大风 / 阵风 / 大雾 / 低能见度 / 降雪 / 低温</div>
+        <div class="kw-note">加「超强 · 特大 · 极端 · 毁灭」再升一档；含「外围 · 减弱」按较强处理。没写到的词不触发天气信号。</div>
+      </div>
       <label class="wide">运行情况描述<input id="cRun" value="早高峰航班量集中，尚未出现正式延误状态"></label>
       <label class="wide">现场备注<input id="cNote" value="机场协同团队尚未给出最新保障能力确认"></label>
       <label class="wide">未知信息<input id="cUnknown" value="逐航班计划、前序飞机位置、机组与地面保障状态"></label>
@@ -1418,6 +1452,10 @@ body{min-height:100vh;background:#05080E}
   const has = (s, k) => String(s || "").indexOf(k) >= 0;
 
   const HAZARDS = [
+    [["超强台风", "强台风", "台风", "飓风", "龙卷"], 3, "台风"],
+    [["冰雹"], 3, "冰雹"],
+    [["暴雪", "特大暴雪"], 3, "暴雪"],
+    [["沙尘暴", "强沙尘"], 3, "沙尘暴"],
     [["雷雨", "雷暴", "强对流"], 2, "雷雨"],
     [["强降雨", "暴雨", "大暴雨", "降雨"], 1, "强降雨"],
     [["阵风", "大风"], 1, "大风"],
@@ -1432,7 +1470,12 @@ body{min-height:100vh;background:#05080E}
     HAZARDS.forEach(([kws, s, label]) => {
       if (kws.some(k => t.indexOf(k) >= 0)) { labels.push(label); sev = Math.max(sev, s); }
     });
-    if (labels.length >= 2 && sev >= 1) sev = 2;
+    if (labels.length >= 2 && sev >= 1) sev = Math.max(sev, 2);
+    // 强度词再抬一档：超强台风 / 特大暴雨 / 极端天气
+    const INTENSE = ["超强", "特大", "极端", "毁灭", "红色预警", "特强", "严重"];
+    if (sev > 0 && INTENSE.some(k => t.indexOf(k) >= 0)) sev = Math.min(3, sev + 1);
+    // 外围影响 / 已减弱 不算极端
+    if (["外围", "减弱", "远离", "掠过"].some(k => t.indexOf(k) >= 0)) sev = Math.min(sev, 2);
     return { sev, labels };
   }
 
@@ -1454,7 +1497,7 @@ body{min-height:100vh;background:#05080E}
       const detail = labels.join("、");
       let extra = "";
       if (p && p.weather && p.weather.wind_p95) extra = `；该机场历史最大风速 95 分位为 ${p.weather.wind_p95.toFixed(1)} 米/秒（SIM-WEATHER）`;
-      signals.push({ id: "S1", label: `天气风险（${detail}）`, weight: 1,
+      signals.push({ id: "S1", label: `天气风险（${detail}${sev >= 3 ? "·极端" : ""}）`, weight: sev >= 3 ? 4 : 1,
         evidence: `事件天气描述为“${wtext}”，归类为${detail}${extra}。`,
         source: "EVT + SIM-WEATHER", rule: "RULE002" });
     } else if (wtext) {
@@ -1530,7 +1573,7 @@ body{min-height:100vh;background:#05080E}
     const facts = [], assume = [], unknown = [];
     const name = event["机场名称"] || "";
     if (p) {
-      facts.push({ claim: `${name} 24 个月平均“按计划完成航班的比例”为 ${pct(p.baseline / 100)}，平均“机场放行正常比例”为 ${pct(p.release / 100)}。`, source: "SIM-BASE（2024-01 至 2025-12）" });
+      facts.push({ claim: `${name} 24 个月平均“按计划完成航班的比例”为 ${pct(p.baseline)}，平均“机场放行正常比例”为 ${pct(p.release)}。`, source: "SIM-BASE（2024-01 至 2025-12）" });
       facts.push({ claim: `${name} 为${p.category}，${p.year || 2025} 年旅客吞吐量 ${p.pax} 万人次，业务重要程度“${p.importance}”。`, source: `SIM-SCALE` });
       if (p.worst && p.worst.length) {
         const txt = p.worst.slice(0, 2).map(w => `${w.ym} 为 ${w.value}%（${w.dev >= 0 ? "+" : ""}${w.dev}pp）`).join("；");
@@ -2002,8 +2045,12 @@ function renderEvents(events) {
         <span class="ename">${esc(e["事件名称"])}</span>
         <span class="emeta">${esc(e["机场名称"])} · ${esc(e["事件时间"])}</span>
       </span>
-      <span class="eid">${esc(e["事件编号"])}</span>`;
+      <span class="eid">${esc(e["事件编号"])}</span>
+      <span class="del" role="button" tabindex="0" title="删除该事件" aria-label="删除">✕</span>`;
     b.onclick = () => selectEvent(e);
+    const del = b.querySelector(".del");
+    del.onclick = ev => { ev.stopPropagation(); deleteEvent(e); };
+    del.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); deleteEvent(e); } };
     box.appendChild(b);
   });
 }
@@ -2117,6 +2164,20 @@ function renderDefinition(d) {
 }
 
 /* ---------------- assess ---------------- */
+function deleteEvent(e) {
+  const list = STATE.boot.events;
+  const i = list.findIndex(x => x["事件编号"] === e["事件编号"]);
+  if (i < 0) return;
+  list.splice(i, 1);
+  renderEvents(list);
+  const wasActive = STATE.event && STATE.event["事件编号"] === e["事件编号"];
+  if (wasActive) {
+    if (list.length) selectEvent(list[0]);
+    else { STATE.event = null; toast("事件已全部删除，刷新页面可恢复"); }
+  }
+  toast("已删除 " + e["事件编号"]);
+}
+
 async function selectEvent(e) {
   STATE.event = e;
   STATE.indicator = null;
@@ -2457,6 +2518,36 @@ function bind() {
     };
     $("#customModal").classList.remove("open");
     STATE.event = e;
+
+    // 把自定义事件挂到左栏顶部，避免“列表还停在 EVT001”的错觉
+    const box = $("#eventList");
+    $$(".event-item").forEach(x => x.classList.remove("active"));
+    const btn = el("button", "event-item active");
+    btn.dataset.id = e["事件编号"];
+    btn.innerHTML = `
+      <span class="lv" style="background:var(--gray)"></span>
+      <span class="etxt">
+        <span class="ename">${esc(e["事件名称"])}</span>
+        <span class="emeta">${esc(e["机场名称"])} · ${esc(e["事件时间"])}</span>
+      </span>
+      <span class="eid">自定义</span>`;
+    btn.onclick = () => { STATE.event = e; $("#heroEvent").textContent = e["事件编号"] + " · " + e["事件名称"]; assess(); };
+    const delC = el("span", "del");
+    delC.textContent = "✕";
+    delC.title = "删除该事件";
+    delC.setAttribute("role", "button");
+    delC.onclick = ev => {
+      ev.stopPropagation();
+      btn.remove();
+      if (STATE.event === e) {
+        if (STATE.boot.events.length) selectEvent(STATE.boot.events[0]);
+        else { STATE.event = null; toast("没有可评估的事件了"); }
+      }
+      toast("已删除自定义事件");
+    };
+    btn.appendChild(delC);
+    box.prepend(btn);
+
     $("#heroEvent").textContent = e["事件编号"] + " · " + e["事件名称"];
     assess();
     toast("已生成新事件评估");
